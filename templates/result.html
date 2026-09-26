@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Game Result - Memory Challenge</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #e8e3ff, #d9e9ff);
+            overflow: hidden;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 45px 35px;
+            border-radius: 25px;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(80, 70, 150, 0.20);
+        }
+
+        .brain {
+            font-size: 65px;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            color: #5546a8;
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .message {
+            font-size: 20px;
+            color: #555;
+            margin-bottom: 25px;
+        }
+
+        .score-box {
+            background: linear-gradient(135deg, #eee9ff, #e4efff);
+            padding: 22px;
+            border-radius: 18px;
+            margin: 20px 0;
+        }
+
+        .score-title {
+            font-size: 17px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .score {
+            font-size: 42px;
+            font-weight: bold;
+            color: #5546a8;
+        }
+
+        .answer-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f7f7fb;
+            border-radius: 15px;
+        }
+
+        .answer-box p {
+            color: #555;
+            font-size: 16px;
+            margin: 6px;
+        }
+
+        .answer {
+            font-weight: bold;
+            color: #5546a8;
+        }
+
+        .buttons {
+            margin-top: 28px;
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            text-decoration: none;
+            border: none;
+            padding: 13px 25px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .play-btn {
+            background: #5546a8;
+            color: white;
+        }
+
+        .dashboard-btn {
+            background: #e5e5f5;
+            color: #5546a8;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 18px rgba(80, 70, 150, 0.20);
+        }
+
+        .small-text {
+            margin-top: 25px;
+            color: #888;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="brain">🧠</div>
+
+        <h1>{{ result }}</h1>
+
+        {% if result == "Correct! 🎉" %}
+            <div class="message">
+                Great memory! Keep going! 🎯
+            </div>
+        {% else %}
+            <div class="message">
+                Don't worry! Try again and improve your memory. 💜
+            </div>
+        {% endif %}
+
+        <div class="score-box">
+
+            <div class="score-title">
+                YOUR SCORE
+            </div>
+
+            <div class="score">
+                {{ score|default(0) }}
+            </div>
+
+        </div>
+
+        <div class="answer-box">
+
+            <p>
+                Correct Answer:
+            </p>
+
+            <p class="answer">
+                {{ answer|join("  •  ") }}
+            </p>
+
+        </div>
+
+        <div class="buttons">
+
+    {% if game_type == "words" %}
+
+        <a href="{{ url_for('words_play_again') }}" class="btn play-btn">
+            🔄 Play Again
+        </a>
+
+    {% else %}
+
+        <a href="{{ url_for('game') }}" class="btn play-btn">
+            🔄 Play Again
+        </a>
+
+    {% endif %}
+
+    <a href="{{ url_for('dashboard') }}" class="btn dashboard-btn">
+        🏠 Dashboard
+    </a>
+
+</div>
+        <div class="small-text">
+            Memory Challenge Game 🧠
+        </div>
+
+    </div>
+
+</body>
+</html>
