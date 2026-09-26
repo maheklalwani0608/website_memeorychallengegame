@@ -3,83 +3,301 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Memory Challenge - Words</title>
 
 <style>
 
 *{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial,sans-serif;
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
 }
 
 body{
-background:linear-gradient(135deg,#6a11cb,#2575fc);
-height:100vh;
-display:flex;
-justify-content:center;
-align-items:center;
+    background:linear-gradient(135deg,#6a11cb,#2575fc);
+
+    min-height:100vh;
+    min-height:100dvh;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    padding:20px;
+
+    overflow-y:auto;
 }
+
+
+/* MAIN CARD */
 
 .card{
-width:600px;
-padding:35px;
-background:rgba(255,255,255,0.15);
-backdrop-filter:blur(15px);
-border-radius:20px;
-text-align:center;
-color:white;
-box-shadow:0 10px 30px rgba(0,0,0,.3);
+    width:100%;
+    max-width:600px;
+
+    padding:35px;
+
+    background:rgba(255,255,255,0.15);
+
+    backdrop-filter:blur(15px);
+    -webkit-backdrop-filter:blur(15px);
+
+    border-radius:20px;
+
+    text-align:center;
+
+    color:white;
+
+    box-shadow:0 10px 30px rgba(0,0,0,.3);
+
+    border:1px solid rgba(255,255,255,.2);
 }
+
+
+/* HEADING */
+
+.card h1{
+    font-size:32px;
+    margin-bottom:10px;
+}
+
+
+/* INSTRUCTION */
+
+.card > p{
+    font-size:16px;
+    line-height:1.5;
+}
+
+
+/* MEMORY WORDS */
 
 .words{
-font-size:35px;
-font-weight:bold;
-letter-spacing:3px;
-margin:30px 0;
+
+    font-size:35px;
+
+    font-weight:bold;
+
+    letter-spacing:3px;
+
+    line-height:1.5;
+
+    margin:30px 0;
+
+    /* IMPORTANT */
+    user-select:none;
+    -webkit-user-select:none;
+    -moz-user-select:none;
+    -ms-user-select:none;
+
+    /* Prevent mobile long-press selection */
+    -webkit-touch-callout:none;
+
+    /* Prevent dragging */
+    -webkit-user-drag:none;
+
+    cursor:default;
+
 }
+
+
+/* ANSWER INPUTS */
 
 input{
-width:100%;
-padding:12px;
-margin:10px 0;
-border:none;
-border-radius:10px;
-font-size:18px;
-text-align:center;
+    width:100%;
+
+    padding:12px;
+
+    margin:10px 0;
+
+    border:none;
+
+    border-radius:10px;
+
+    font-size:18px;
+
+    text-align:center;
+
+    outline:none;
 }
 
+input:focus{
+    box-shadow:0 0 12px rgba(255,215,0,.7);
+}
+
+
+/* SUBMIT BUTTON */
+
 button{
-margin-top:20px;
-padding:14px 35px;
-border:none;
-border-radius:10px;
-font-size:18px;
-font-weight:bold;
-background:#FFD700;
-cursor:pointer;
+    margin-top:20px;
+
+    padding:14px 35px;
+
+    border:none;
+
+    border-radius:10px;
+
+    font-size:18px;
+
+    font-weight:bold;
+
+    background:#FFD700;
+
+    color:#333;
+
+    cursor:pointer;
+
+    transition:.3s;
 }
 
 button:hover{
-transform:scale(1.05);
+    transform:scale(1.05);
+
+    box-shadow:0 0 20px rgba(255,215,0,.7);
 }
 
+
+/* HIDE ANSWER FORM INITIALLY */
+
 #answerForm{
-display:none;
+    display:none;
+}
+
+
+/* =================================
+   SMALL LAPTOP SCREEN
+   ================================= */
+
+@media (max-height:700px){
+
+    .card{
+        padding:25px;
+    }
+
+    .card h1{
+        font-size:28px;
+    }
+
+    .words{
+        font-size:30px;
+        margin:20px 0;
+    }
+
+}
+
+
+/* =================================
+   MOBILE
+   ================================= */
+
+@media (max-width:600px){
+
+    body{
+        padding:15px;
+    }
+
+    .card{
+        padding:25px 18px;
+    }
+
+    .card h1{
+        font-size:26px;
+    }
+
+    .words{
+        font-size:26px;
+        letter-spacing:2px;
+    }
+
 }
 
 </style>
 
+
 <script>
+
+/*
+=========================================
+PREVENT COPYING MEMORY WORDS
+=========================================
+*/
+
+
+/* Prevent selecting the words */
+
+document.addEventListener("selectstart", function(event){
+
+    if(event.target.closest("#wordBox")){
+        event.preventDefault();
+    }
+
+});
+
+
+/* Prevent right-click on the words */
+
+document.addEventListener("contextmenu", function(event){
+
+    if(event.target.closest("#wordBox")){
+        event.preventDefault();
+    }
+
+});
+
+
+/* Prevent copying the words */
+
+document.addEventListener("copy", function(event){
+
+    if(event.target.closest("#wordBox")){
+        event.preventDefault();
+    }
+
+});
+
+
+/* Prevent cutting */
+
+document.addEventListener("cut", function(event){
+
+    if(event.target.closest("#wordBox")){
+        event.preventDefault();
+    }
+
+});
+
+
+/* Prevent dragging */
+
+document.addEventListener("dragstart", function(event){
+
+    if(event.target.closest("#wordBox")){
+        event.preventDefault();
+    }
+
+});
+
+
+/*
+=========================================
+5 SECOND MEMORY TIMER
+=========================================
+*/
 
 function hideWords(){
 
-document.getElementById("wordBox").style.display="none";
+    document.getElementById("wordBox").style.display="none";
 
-document.getElementById("answerForm").style.display="block";
+    document.getElementById("answerForm").style.display="block";
 
 }
+
+
+/*
+Words disappear after 5 seconds
+*/
 
 setTimeout(hideWords,5000);
 
@@ -87,41 +305,94 @@ setTimeout(hideWords,5000);
 
 </head>
 
+
 <body>
+
 
 <div class="card">
 
-<h1>📝 Word Memory Challenge</h1>
 
-<p>Memorize these words. They will disappear after 5 seconds.</p>
+    <!-- TITLE -->
 
-<div id="wordBox" class="words">
+    <h1>
+        📝 Word Memory Challenge
+    </h1>
 
-{{ words[0] }} &nbsp;
 
-{{ words[1] }} &nbsp;
+    <!-- INSTRUCTION -->
 
-{{ words[2] }} &nbsp;
+    <p>
+        Memorize these words. They will disappear after 5 seconds.
+    </p>
 
-{{ words[3] }}
+
+    <!-- MEMORY WORDS -->
+
+    <div id="wordBox" class="words">
+
+        {{ words[0] }}
+        &nbsp;
+
+        {{ words[1] }}
+        &nbsp;
+
+        {{ words[2] }}
+        &nbsp;
+
+        {{ words[3] }}
+
+    </div>
+
+
+    <!-- ANSWER FORM -->
+
+    <form
+        id="answerForm"
+        action="/check_words"
+        method="POST"
+    >
+
+        <input
+            type="text"
+            name="word1"
+            placeholder="Word 1"
+            autocomplete="off"
+            required
+        >
+
+        <input
+            type="text"
+            name="word2"
+            placeholder="Word 2"
+            autocomplete="off"
+            required
+        >
+
+        <input
+            type="text"
+            name="word3"
+            placeholder="Word 3"
+            autocomplete="off"
+            required
+        >
+
+        <input
+            type="text"
+            name="word4"
+            placeholder="Word 4"
+            autocomplete="off"
+            required
+        >
+
+        <button type="submit">
+            Submit
+        </button>
+
+    </form>
+
 
 </div>
 
-<form id="answerForm" action="/check_words" method="POST">
-
-<input type="text" name="word1" placeholder="Word 1" required>
-
-<input type="text" name="word2" placeholder="Word 2" required>
-
-<input type="text" name="word3" placeholder="Word 3" required>
-
-<input type="text" name="word4" placeholder="Word 4" required>
-
-<button type="submit">Submit</button>
-
-</form>
-
-</div>
 
 </body>
 </html>
