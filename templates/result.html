@@ -111,6 +111,11 @@
             color: white;
         }
 
+        .profile-btn {
+            background: #dcd5ff;
+            color: #5546a8;
+        }
+
         .dashboard-btn {
             background: #e5e5f5;
             color: #5546a8;
@@ -173,25 +178,31 @@
 
         <div class="buttons">
 
-    {% if game_type == "words" %}
+            {% if game_type == "words" %}
 
-        <a href="{{ url_for('words_play_again') }}" class="btn play-btn">
-            🔄 Play Again
-        </a>
+                <a href="{{ url_for('words_play_again') }}" class="btn play-btn">
+                    🔄 Play Again
+                </a>
 
-    {% else %}
+            {% else %}
 
-        <a href="{{ url_for('game') }}" class="btn play-btn">
-            🔄 Play Again
-        </a>
+                <a href="{{ url_for('game') }}" class="btn play-btn">
+                    🔄 Play Again
+                </a>
 
-    {% endif %}
+            {% endif %}
 
-    <a href="{{ url_for('dashboard') }}" class="btn dashboard-btn">
-        🏠 Dashboard
-    </a>
+            <!-- NEW PROFILE BUTTON -->
+            <a href="{{ url_for('profile') }}" class="btn profile-btn">
+                👤 My Profile
+            </a>
 
-</div>
+            <a href="{{ url_for('dashboard') }}" class="btn dashboard-btn">
+                🏠 Dashboard
+            </a>
+
+        </div>
+
         <div class="small-text">
             Memory Challenge Game 🧠
         </div>

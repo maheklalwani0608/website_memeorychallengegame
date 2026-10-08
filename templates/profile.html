@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>My Profile - Memory Challenge</title>
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(
+                135deg,
+                #eef2ff,
+                #dbeafe,
+                #f3e8ff
+            );
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            padding: 25px;
+        }
+
+        .profile-container {
+
+            width: 100%;
+            max-width: 850px;
+
+            background: rgba(255, 255, 255, 0.95);
+
+            border-radius: 25px;
+
+            padding: 30px;
+
+            box-shadow:
+                0 15px 40px
+                rgba(70, 50, 120, 0.18);
+        }
+
+
+        /* TITLE */
+
+        .title {
+
+            text-align: center;
+
+            color: #4c1d95;
+
+            margin-bottom: 25px;
+        }
+
+        .title h1 {
+
+            font-size: 32px;
+
+            margin-bottom: 8px;
+        }
+
+        .title p {
+
+            color: #666;
+
+            font-size: 15px;
+        }
+
+
+        /* USER CARD */
+
+        .user-card {
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #7c3aed,
+                    #4f46e5
+                );
+
+            color: white;
+
+            border-radius: 20px;
+
+            padding: 25px;
+
+            text-align: center;
+
+            margin-bottom: 25px;
+
+            box-shadow:
+                0 10px 25px
+                rgba(79, 70, 229, 0.25);
+        }
+
+        .user-icon {
+
+            width: 75px;
+            height: 75px;
+
+            border-radius: 50%;
+
+            background: white;
+
+            color: #5b21b6;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            font-size: 35px;
+
+            margin: 0 auto 12px;
+        }
+
+        .username {
+
+            font-size: 25px;
+
+            font-weight: bold;
+        }
+
+
+        /* STATISTICS */
+
+        .stats {
+
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 18px;
+
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+
+            background: #f8f7ff;
+
+            border: 1px solid #e4ddff;
+
+            border-radius: 18px;
+
+            padding: 22px;
+
+            text-align: center;
+        }
+
+        .stat-icon {
+
+            font-size: 28px;
+
+            margin-bottom: 8px;
+        }
+
+        .stat-number {
+
+            font-size: 30px;
+
+            font-weight: bold;
+
+            color: #5b21b6;
+        }
+
+        .stat-name {
+
+            color: #777;
+
+            margin-top: 5px;
+
+            font-size: 14px;
+        }
+
+
+        /* SCORE SECTION */
+
+        .score-section {
+
+            margin-top: 10px;
+        }
+
+        .score-section h2 {
+
+            color: #4c1d95;
+
+            margin-bottom: 15px;
+        }
+
+
+        /* SCORE TABLE */
+
+        .table-wrapper {
+
+            width: 100%;
+
+            overflow-x: auto;
+
+            border-radius: 15px;
+        }
+
+        .score-table {
+
+            width: 100%;
+
+            min-width: 600px;
+
+            border-collapse: collapse;
+
+            overflow: hidden;
+
+            border-radius: 15px;
+        }
+
+        .score-table th {
+
+            background: #6d28d9;
+
+            color: white;
+
+            padding: 13px;
+
+            text-align: center;
+        }
+
+        .score-table td {
+
+            padding: 13px;
+
+            text-align: center;
+
+            border-bottom: 1px solid #eee;
+
+            color: #444;
+        }
+
+        .score-table tr:nth-child(even) {
+
+            background: #faf9ff;
+        }
+
+        .score {
+
+            font-weight: bold;
+
+            color: #5b21b6;
+        }
+
+
+        /* GAME TYPE */
+
+        .game-digits {
+
+            color: #4338ca;
+
+            font-weight: bold;
+        }
+
+        .game-words {
+
+            color: #7c3aed;
+
+            font-weight: bold;
+        }
+
+
+        .no-score {
+
+            text-align: center;
+
+            padding: 20px;
+
+            color: #777;
+        }
+
+
+        /* BUTTONS */
+
+        .buttons {
+
+            display: flex;
+
+            gap: 15px;
+
+            justify-content: center;
+
+            margin-top: 30px;
+
+            flex-wrap: wrap;
+        }
+
+        .btn {
+
+            text-decoration: none;
+
+            padding: 13px 25px;
+
+            border-radius: 12px;
+
+            font-weight: bold;
+
+            transition: 0.3s;
+
+            text-align: center;
+
+            border: none;
+        }
+
+        .play-btn {
+
+            background: #6d28d9;
+
+            color: white;
+        }
+
+        .home-btn {
+
+            background: #ede9fe;
+
+            color: #5b21b6;
+        }
+
+        .clear-btn {
+
+            background: #fff0f0;
+
+            color: #c62828;
+
+            cursor: pointer;
+
+            font-size: 14px;
+        }
+
+        .logout-btn {
+
+            background: #f3dede;
+
+            color: #b42323;
+        }
+
+        .btn:hover {
+
+            transform: translateY(-2px);
+
+            box-shadow:
+                0 7px 15px
+                rgba(0, 0, 0, 0.12);
+        }
+
+
+        /* MOBILE */
+
+        @media (max-width: 600px) {
+
+            body {
+
+                padding: 15px;
+            }
+
+            .profile-container {
+
+                padding: 20px;
+            }
+
+            .title h1 {
+
+                font-size: 26px;
+            }
+
+            .stats {
+
+                grid-template-columns: 1fr;
+            }
+
+            .buttons {
+
+                flex-direction: column;
+            }
+
+            .buttons .btn,
+            .buttons form {
+
+                width: 100%;
+            }
+
+            .buttons form .btn {
+
+                width: 100%;
+            }
+
+            .score-table {
+
+                font-size: 13px;
+            }
+
+            .score-table th,
+            .score-table td {
+
+                padding: 9px 5px;
+            }
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="profile-container">
+
+
+    <!-- TITLE -->
+
+    <div class="title">
+
+        <h1>🧠 My Profile</h1>
+
+        <p>
+            Track your Memory Challenge progress
+        </p>
+
+    </div>
+
+
+    <!-- USER INFORMATION -->
+
+    <div class="user-card">
+
+        <div class="user-icon">
+            👤
+        </div>
+
+        <div class="username">
+            {{ username }}
+        </div>
+
+        <p style="margin-top: 6px;">
+            Memory Challenge Player
+        </p>
+
+    </div>
+
+
+    <!-- STATISTICS -->
+
+    <div class="stats">
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                🏆
+            </div>
+
+            <div class="stat-number">
+                {{ total_score }}
+            </div>
+
+            <div class="stat-name">
+                Total Score
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                🎮
+            </div>
+
+            <div class="stat-number">
+                {{ games_played }}
+            </div>
+
+            <div class="stat-name">
+                Games Played
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- SCORE HISTORY -->
+
+    <div class="score-section">
+
+        <h2>
+            📊 Score History
+        </h2>
+
+
+        {% if scores %}
+
+        <div class="table-wrapper">
+
+            <table class="score-table">
+
+                <tr>
+
+                    <th>Game</th>
+
+                    <th>Level</th>
+
+                    <th>Score</th>
+
+                    <th>Result</th>
+
+                    <th>Date</th>
+
+                </tr>
+
+
+                {% for item in scores %}
+
+                <tr>
+
+                    <!-- GAME -->
+
+                    <td>
+
+                        {% if item.game_type == "Digits" %}
+
+                            <span class="game-digits">
+                                🔢 Digits
+                            </span>
+
+                        {% else %}
+
+                            <span class="game-words">
+                                📝 Words
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <!-- LEVEL -->
+
+                    <td>
+
+                        {% if item.game_type == "Words" %}
+
+                            —
+
+                        {% else %}
+
+                            {{ item.level }}
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <!-- SCORE -->
+
+                    <td class="score">
+
+                        {{ item.score }}
+
+                    </td>
+
+
+                    <!-- RESULT -->
+
+                    <td>
+
+                        {{ item.result }}
+
+                    </td>
+
+
+                    <!-- DATE -->
+
+                    <td>
+
+                        {{ item.played_at.strftime('%d-%m-%Y')
+                           if item.played_at else '' }}
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </table>
+
+        </div>
+
+        {% else %}
+
+        <div class="no-score">
+
+            No scores available yet.
+            Start playing!
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- BUTTONS -->
+
+    <div class="buttons">
+
+
+        <!-- PLAY AGAIN -->
+
+        <a href="{{ url_for('play_again') }}"
+           class="btn play-btn">
+
+            🎮 Play Again
+
+        </a>
+
+
+        <!-- DASHBOARD -->
+
+        <a href="{{ url_for('dashboard') }}"
+           class="btn home-btn">
+
+            🏠 Dashboard
+
+        </a>
+
+
+        <!-- CLEAR HISTORY -->
+
+        <form
+            action="{{ url_for('clear_history') }}"
+            method="POST"
+            onsubmit="return confirm('Are you sure you want to clear your complete score history? This cannot be undone.');"
+        >
+
+            <button
+                type="submit"
+                class="btn clear-btn"
+            >
+
+                🗑️ Clear History
+
+            </button>
+
+        </form>
+
+
+        <!-- LOGOUT -->
+
+        <a href="{{ url_for('logout') }}"
+           class="btn logout-btn">
+
+            🚪 Logout
+
+        </a>
+
+    </div>
+
+
+</div>
+
+</body>
+</html>

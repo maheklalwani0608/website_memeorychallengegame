@@ -2,7 +2,17 @@ import mysql.connector
 from flask import Flask, render_template, request, session, redirect, url_for
 import random
 
-# ---------------- DATABASE CONNECTION ----------------
+# ==========================================================
+# FLASK APP
+# ==========================================================
+
+app = Flask(__name__)
+app.secret_key = "memory_game"
+
+
+# ==========================================================
+# DATABASE CONNECTION
+# ==========================================================
 
 db = mysql.connector.connect(
     host="localhost",
@@ -11,13 +21,23 @@ db = mysql.connector.connect(
     database="memory_game"
 )
 
-cursor = db.cursor()
 
-app = Flask(__name__)
-app.secret_key = "memory_game"
+# ==========================================================
+# HELPER FUNCTION
+# ==========================================================
+
+def get_cursor(dictionary=False):
+    return db.cursor(
+        dictionary=dictionary,
+        buffered=True
+    )
 
 
-# ---------------- SCORE TABLE ----------------
+# ==========================================================
+# CREATE / UPDATE SCORE TABLE
+# ==========================================================
+
+cursor = get_cursor()
 
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS game_scores (
@@ -32,14 +52,41 @@ CREATE TABLE IF NOT EXISTS game_scores (
 """)
 
 db.commit()
+cursor.close()
+
+
+# ==========================================================
+# ADD GAME TYPE COLUMN IF IT DOES NOT EXIST
+# ==========================================================
+
+cursor = get_cursor()
+
+try:
+    cursor.execute("""
+        ALTER TABLE game_scores
+        ADD COLUMN game_type VARCHAR(20) NOT NULL DEFAULT 'Digits'
+    """)
+    db.commit()
+
+except mysql.connector.Error:
+    # Column already exists
+    db.rollback()
+
+cursor.close()
+
+
+# ==========================================================
+# HOME
+# ==========================================================
+
+@app.route("/")
+def home():
+    return redirect(url_for("login"))
 
 
 # ==========================================================
 # REGISTER
 # ==========================================================
-@app.route("/")
-def home():
-    return redirect(url_for("login"))
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -61,8 +108,18 @@ def register():
 
         values = (username, email, password)
 
-        cursor.execute(sql, values)
-        db.commit()
+        cursor = get_cursor()
+
+        try:
+            cursor.execute(sql, values)
+            db.commit()
+
+        except mysql.connector.Error as err:
+            db.rollback()
+            cursor.close()
+            return f"Registration error: {err}"
+
+        cursor.close()
 
         return render_template("login.html")
 
@@ -82,22 +139,29 @@ def login():
     email = request.form["email"]
     password = request.form["password"]
 
-    sql = "SELECT * FROM users WHERE email = %s AND password = %s"
+    sql = """
+    SELECT *
+    FROM users
+    WHERE email = %s AND password = %s
+    """
+
     values = (email, password)
 
+    cursor = get_cursor()
+
     cursor.execute(sql, values)
+
     user = cursor.fetchone()
+
+    cursor.close()
 
     if user:
 
-        # Clear previous user's session
         session.clear()
 
-        # Store current user's information
         session["user_id"] = user[0]
         session["username"] = user[1]
 
-        # Fresh game scores
         session["digits_score"] = 0
         session["digits_level"] = 1
         session["words_score"] = 0
@@ -150,10 +214,8 @@ def words():
         "Notebook"
     ]
 
-    # Generate exactly 4 random words
     selected_words = random.sample(words_list, 4)
 
-    # Store these 4 words
     session["words"] = selected_words
 
     return render_template(
@@ -181,7 +243,6 @@ def check_words():
 
     correct_answer = session.get("words", [])
 
-    # Count individually correct answers
     correct_count = 0
 
     for i in range(4):
@@ -189,45 +250,49 @@ def check_words():
         if user_answer[i].strip().lower() == correct_answer[i].strip().lower():
             correct_count += 1
 
-    # ------------------------------------------------------
-    # WORDS SCORE
-    # 4 correct = 40
-    # 3 correct = 30
-    # 2 correct = 20
-    # 1 correct = 10
-    # 0 correct = 0
-    # ------------------------------------------------------
+    # 4 = 40
+    # 3 = 30
+    # 2 = 20
+    # 1 = 10
+    # 0 = 0
 
     score = correct_count * 10
 
-    # Save this round's score
     session["words_score"] = score
 
-    # Save result in database
     user_id = session["user_id"]
 
     result = "Won" if correct_count > 0 else "Lost"
 
+    # SAVE WORDS GAME
     sql = """
-    INSERT INTO game_scores (user_id, score, level, result)
-    VALUES (%s, %s, %s, %s)
+    INSERT INTO game_scores
+    (user_id, score, level, result, game_type)
+    VALUES (%s, %s, %s, %s, %s)
     """
 
     values = (
         user_id,
         score,
         1,
-        result
+        result,
+        "Words"
     )
 
+    cursor = get_cursor()
+
     cursor.execute(sql, values)
+
     db.commit()
 
-    # Result message
+    cursor.close()
+
     if correct_count == 4:
         message = "Correct! 🎉"
+
     elif correct_count > 0:
         message = f"{correct_count} out of 4 correct! 🎯"
+
     else:
         message = "Wrong Answer!"
 
@@ -250,10 +315,10 @@ def words_play_again():
     if "user_id" not in session:
         return redirect(url_for("login"))
 
-    # Start the new Words round from 0
     session["words_score"] = 0
 
-    # Generate a completely new set of 4 words
+    session.pop("words", None)
+
     return redirect(url_for("words"))
 
 
@@ -267,7 +332,10 @@ def game():
     if "user_id" not in session:
         return redirect(url_for("login"))
 
-    # If user selected a game type from dashboard
+    # ------------------------------------------------------
+    # GAME SELECTION
+    # ------------------------------------------------------
+
     if request.method == "POST":
 
         game_type = request.form["game_type"]
@@ -279,17 +347,23 @@ def game():
             return redirect(url_for("words"))
 
         # Digits selected
+
         session["game_type"] = "digits"
 
-        # Start Digits fresh
         session["digits_score"] = 0
         session["digits_level"] = 1
 
-    # ---------------- DIGITS ----------------
+    # ------------------------------------------------------
+    # CURRENT DIGIT LEVEL
+    # ------------------------------------------------------
 
     level = session.get("digits_level", 1)
 
     score = session.get("digits_score", 0)
+
+    # ------------------------------------------------------
+    # LEVEL 1
+    # ------------------------------------------------------
 
     if level == 1:
 
@@ -298,12 +372,20 @@ def game():
             for _ in range(4)
         ]
 
+    # ------------------------------------------------------
+    # LEVEL 2
+    # ------------------------------------------------------
+
     elif level == 2:
 
         numbers = [
             random.randint(10, 99)
             for _ in range(4)
         ]
+
+    # ------------------------------------------------------
+    # LEVEL 3
+    # ------------------------------------------------------
 
     elif level == 3:
 
@@ -312,6 +394,10 @@ def game():
             for _ in range(4)
         ]
 
+    # ------------------------------------------------------
+    # LEVEL 4
+    # ------------------------------------------------------
+
     elif level == 4:
 
         numbers = [
@@ -319,7 +405,35 @@ def game():
             for _ in range(4)
         ]
 
+    # ------------------------------------------------------
+    # ALL 4 LEVELS COMPLETED
+    # ------------------------------------------------------
+
     else:
+
+        user_id = session["user_id"]
+
+        sql = """
+        INSERT INTO game_scores
+        (user_id, score, level, result, game_type)
+        VALUES (%s, %s, %s, %s, %s)
+        """
+
+        values = (
+            user_id,
+            score,
+            4,
+            "Won",
+            "Digits"
+        )
+
+        cursor = get_cursor()
+
+        cursor.execute(sql, values)
+
+        db.commit()
+
+        cursor.close()
 
         return render_template(
             "result.html",
@@ -362,41 +476,55 @@ def check():
         for i in correct_answer
     ]
 
-    # ---------------- CORRECT ----------------
+    # ======================================================
+    # CORRECT ANSWER
+    # ======================================================
 
     if user_answer == correct_answer:
 
-        # +10 for correct level
-        session["digits_score"] = session.get("digits_score", 0) + 10
+        session["digits_score"] = (
+            session.get("digits_score", 0) + 10
+        )
 
-        # Next level
-        session["digits_level"] = session.get("digits_level", 1) + 1
+        session["digits_level"] = (
+            session.get("digits_level", 1) + 1
+        )
 
         return redirect(url_for("game"))
 
-    # ---------------- WRONG ----------------
+    # ======================================================
+    # WRONG ANSWER
+    # ======================================================
 
     else:
 
         user_id = session["user_id"]
 
         score = session.get("digits_score", 0)
+
         level = session.get("digits_level", 1)
 
         sql = """
-        INSERT INTO game_scores (user_id, score, level, result)
-        VALUES (%s, %s, %s, %s)
+        INSERT INTO game_scores
+        (user_id, score, level, result, game_type)
+        VALUES (%s, %s, %s, %s, %s)
         """
 
         values = (
             user_id,
             score,
             level,
-            "Lost"
+            "Lost",
+            "Digits"
         )
 
+        cursor = get_cursor()
+
         cursor.execute(sql, values)
+
         db.commit()
+
+        cursor.close()
 
         return render_template(
             "result.html",
@@ -405,6 +533,157 @@ def check():
             score=score,
             game_type="digits"
         )
+
+
+# ==========================================================
+# PLAY AGAIN - DIGITS
+# ==========================================================
+
+@app.route("/play_again")
+def play_again():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    session["digits_score"] = 0
+    session["digits_level"] = 1
+
+    session.pop("numbers", None)
+
+    session["game_type"] = "digits"
+
+    return redirect(url_for("game"))
+
+
+# ==========================================================
+# PROFILE
+# ==========================================================
+
+@app.route("/profile")
+def profile():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user_id = session["user_id"]
+
+    # ------------------------------------------------------
+    # USER
+    # ------------------------------------------------------
+
+    cursor = get_cursor(dictionary=True)
+
+    cursor.execute(
+        """
+        SELECT username
+        FROM users
+        WHERE id = %s
+        """,
+        (user_id,)
+    )
+
+    user = cursor.fetchone()
+
+    cursor.close()
+
+    if not user:
+
+        session.clear()
+
+        return redirect(url_for("login"))
+
+    # ------------------------------------------------------
+    # SCORE HISTORY
+    # ------------------------------------------------------
+
+    cursor = get_cursor(dictionary=True)
+
+    cursor.execute(
+        """
+        SELECT score, level, result, game_type, played_at
+        FROM game_scores
+        WHERE user_id = %s
+        ORDER BY played_at DESC
+        """,
+        (user_id,)
+    )
+
+    scores = cursor.fetchall()
+
+    cursor.close()
+
+    # ------------------------------------------------------
+    # TOTAL SCORE
+    # ------------------------------------------------------
+
+    total_score = sum(
+        row["score"]
+        for row in scores
+    )
+
+    # ------------------------------------------------------
+    # GAMES PLAYED
+    # ------------------------------------------------------
+
+    games_played = len(scores)
+
+    return render_template(
+        "Profile.html",
+        username=user["username"],
+        total_score=total_score,
+        games_played=games_played,
+        scores=scores
+    )
+
+
+# ==========================================================
+# CLEAR SCORE HISTORY
+# ==========================================================
+
+@app.route("/clear_history", methods=["POST"])
+def clear_history():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user_id = session["user_id"]
+
+    cursor = get_cursor()
+
+    cursor.execute(
+        """
+        DELETE FROM game_scores
+        WHERE user_id = %s
+        """,
+        (user_id,)
+    )
+
+    db.commit()
+
+    cursor.close()
+
+    # Reset current game
+
+    session["digits_score"] = 0
+    session["digits_level"] = 1
+    session["words_score"] = 0
+
+    session.pop("numbers", None)
+    session.pop("words", None)
+
+    return redirect(url_for("profile"))
+
+
+# ==========================================================
+# LOGOUT
+# ==========================================================
+
+@app.route("/logout")
+def logout():
+
+    session.clear()
+
+    return redirect(url_for("login"))
 
 
 # ==========================================================
